@@ -100,11 +100,8 @@ void _dynArrSetCapacity(DynArr *v, int newCap)
         for (int i = 0; i < v->size; i++) {
             copy[i] = getDynArr(v, i);
         }
-        v->data = (TYPE *) malloc(newCap * TYPE_SIZE);
-        for (int i = 0; i < v->size; i++) {
-            v->data[i] = copy[i];
-        }
-        free(copy);
+        free(v->data);
+        v->data = copy;
     }
 	return;
 }
