@@ -25,7 +25,9 @@ void generate(struct student* students)
     for (int i = 0; i < 10; i++) {
     //find id.
       int rndId = (rand() % 10) + 1;
+      
       int j = 0;
+      students[0].id = rndId;
       int searching = 1;
       while (j < 10 && searching == 1) {
         if (students[j].id == rndId) {
