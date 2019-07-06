@@ -22,12 +22,13 @@ struct student* allocate()
 
 void generate(struct student* students)
 {
+    int rndFId = (rnd() % 10) + 1;
     for (int i = 0; i < 10; i++) {
     //find id.
       int rndId = (rand() % 10) + 1;
       
       int j = 0;
-      students[0].id = rndId;
+      students[0].id = rndFId;
       int searching = 1;
       while (j < 10 && searching == 1) {
         if (students[j].id == rndId) {
