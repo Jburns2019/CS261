@@ -34,15 +34,13 @@ void questionTwo() {
 	}
 	printf("The O()+ is about: %f\n", sum / 50.0);
 	//result is 12.76.
-	//So the amortized analysis is O(1)+.
+	//So the amortized analysis is O(n)+ which means that the average ends up being the worst case. Since this is the case we do not need to worry about 
 	return;
 }
 
 int main() {
 	questionOne();
     	questionTwo();
-
-	//The amortized analysis for both is O(1)+.
 	return 0;
 }
 
