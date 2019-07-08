@@ -1,0 +1,46 @@
+#include <stdio.h>
+
+void questionOne() {
+    	//Question 1:
+    	int cap = 8;
+	int sum = 0;
+	for (int i = 1; i <= 50; i++) {
+		if (i > cap) {
+			sum += cap+1;
+			cap *= 2;
+		}
+		else {
+			sum += 1;
+		}
+	}
+	printf("The O()+ is about: %f\n", sum / 50.0);
+	//result is 2.12.
+	//So the amortized analysis is O(1)+.
+	return;
+}
+
+void questionTwo() {
+    	//Question 2:
+    	int cap = 8;
+	int sum = 0;
+	for (int i = 1; i <= 50; i++) {
+		if (i > cap) {
+			sum += cap + 1;
+			cap += 2;
+		}
+		else {
+			sum++;
+		}
+	}
+	printf("The O()+ is about: %f\n", sum / 50.0);
+	//result is 12.76.
+	//So the amortized analysis is O(n)+ since the average is roughly O(n)+ then we can just drop the plus because that is the worst case.
+	return;
+}
+
+int main() {
+	questionOne();
+    	questionTwo();
+	return 0;
+}
+
