@@ -77,8 +77,6 @@ typedef struct Stack {
 void listQueueInit(Queue* queue)
 {
 	assert(queue != 0);
-	queue->head = (Link *)malloc(sizeof(Link));
-	queue->tail = (Link *)malloc(sizeof(Link));
 	Link *sentinel = (Link *)malloc(sizeof(Link));
 	sentinel->next = NULL;
 	sentinel->value = 0;
