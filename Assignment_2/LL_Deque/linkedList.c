@@ -266,11 +266,11 @@ void linkedListPrint(LinkedList* deque)
         for (int i = 0; i < deque->size; i++) {
             if (!(i == deque->size - 1)) {
                 tmp = tmp->next;
-                printf("%g, ", tmp->value);
+                printf("FORMAT_SPECIFIER, ", tmp->value);
             }
             else {
                 tmp = tmp->next;
-                printf("%g]\n", tmp->value);
+                printf("FORMAT_SPECIFIER]\n", tmp->value);
             }
         }
 	}
