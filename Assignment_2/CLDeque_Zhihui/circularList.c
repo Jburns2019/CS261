@@ -290,7 +290,12 @@ void circularListReverse(struct CircularList* deque)
 {
 	assert(deque!=NULL && circularListIsEmpty(deque)!=1);
 	struct Link* temp;
-	struct Link* cur=deque->sentinel;
-	//???
-
+	struct Link* current=deque->sentinel;
+  int i;
+	for(i=0;i<=deque->size;i++){
+   temp=current->next;
+   current->next=current->prev;
+   current->prev=temp;
+   current=current->next;
+ }
 }
