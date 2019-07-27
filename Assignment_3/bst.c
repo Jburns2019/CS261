@@ -10,10 +10,11 @@
 
 
 
-
-
+#include <stdio.h>
 #include <stdlib.h>
-#include "compare.c"
+#include "bst.h"
+#include "structs.h"
+#include <assert.h>
 
 typedef struct Node {
 	TYPE         val;
@@ -136,6 +137,7 @@ Node *_addNode(Node *cur, TYPE val)
 {
     assert(val != NULL);
     Node *newNode = (Node *)malloc(sizeof(Node));
+    assert(newNode != 0);
     newNode->left = newNode->right = 0;
     newNode->val = val;
     if (cur == 0) {
@@ -263,8 +265,11 @@ Node *_removeNode(Node *cur, TYPE val)
 {
     assert(cur != 0 && val != NULL);
     if (compare(val, cur->val) == 0) {
+        Node *tmp = cur;
         if (cur->right == 0) {
-            return cur->left;
+            cur = tmp->left;
+            free(tmp);
+            return cur;
         }
         else {
             cur = _removeLeftMost(cur->right);
@@ -292,7 +297,7 @@ void removeBSTree(BSTree *tree, TYPE val)
 		tree->root = _removeNode(tree->root, val);
 		tree->cnt--;
 	} else {
-        printf("That value is not present.");
+        printf("That value is not present.\n");
     }
 }
 
