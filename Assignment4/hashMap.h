@@ -38,6 +38,7 @@ int hashMapContainsKey(HashMap* map, const char* key);
 int hashMapSize(HashMap* map);
 int hashMapCapacity(HashMap* map);
 int hashMapEmptyBuckets(HashMap* map);
+char **mapCollection(HashMap *map);
 float hashMapTableLoad(HashMap* map);
 void hashMapPrint(HashMap* map);
 
