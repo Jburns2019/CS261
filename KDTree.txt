@@ -1,0 +1,291 @@
+/*Explanation:
+
+The k-d tree is a tree that can sort k dimensional cordinates. It is a special instance of a tree.
+Similar to a BST it is not auto balanced, but balancing methods could be applied. It would get very
+complicated though, because the AVL which is a height based balancing might have to make
+a long string of tests depending on the number of dimensions represented.*/
+
+/* --------------------------------------------------------------------------------------------------------------- */
+
+/*How they work:
+2D example: (5,5), (2,6), (4,3), (4,7), (7,4), (8,3), (8, 5), (4,4). (preorder traversal).
+0				(5,5)
+x		(2,6)	 		(7,4)
+y	(4,3)	(4,7)	(8,3)	 (8,5)
+x (4,4)
+
+The comparisons (left is <= and right is >) rotate between the list of d's (1st,2nd,3rd,4th,5th,6th,..
+and repeat). One could compare this to cutting out space until a region of space is found. If the point
+does not exist in the space represented than the kth dimensional point is added to the space.
+Another interesting property of this is that one can imagine a k-dimensional slices.
+
+1D Example: 3,1,0,2,5,4,6. (preorder traversal).
+contains(0):
+Visual:
+0-----1-----2-----3-----4-----5-----6
+0-----1-----2-- <- --3-- | --4-----5-----6
+0-----1-----2
+Tree:
+				3
+		1				5
+	0		2		4		6
+
+		1
+	0		2
+
+Visual:
+0-----1-----2
+0-- <- --1-- | --2
+0
+Tree:
+		1
+	0		2
+
+	0
+
+returns 1.
+
+In 1d space a line cut is made. In 2d a box cut is made. In 3d a cube cut is made.
+In 4d a hypercube cut is made. This continues. Pretty cool.
+
+Since the bag is the easiest container structure to implement (only 4 functions and no
+complicated methods), I'll show the bag implementation of the KDTree.*/
+
+/* --------------------------------------------------------------------------------------------------------------- */
+
+/*Uses of the KDT tree:
+	* Nearest Neighbor Search -
+		To find the point closest to a given input point you just traverse the tree. The node that has no child left
+		to get to a closer node is the closest node. This is highly aplicable in robotics. If one can make a 3D
+		rendering of a room a robot could find the closest object to it by using this algorithm. It could also
+		use the KDTree to map a route through the room by constantly updating the tree. The robot could make
+		decisions based on the tree.
+	* Range Search -
+		By discarding bigger and smaller trees than a given range a tree could focus on tree that contains only
+		a certain range. One could than do one of the 6 traversals to find Range Union KDTree.
+	* Sorting kth dimensional items
+		I have alread talked about this, but it should not be dismissed as a small feat. Being able to quickly
+		sort 4 100000000 dimensional cordinates in O(log(4)) is nothing to sneaze at. This could be very
+		useful for making fancy algorithms that hold tons and tons of data from many different sources.
+	* graphics
+		The KDTree partitions k-dimensional space. This means that adding and removing pixels in a tree is very fast.
+		This allows for quicker GPU processing. I will be very honest the papers on the internet about this are
+		way over my head. Talking about GPU ray tracing and photon mapping for moving pictures. Wow. Incredible.
+*/
+
+/* --------------------------------------------------------------------------------------------------------------- */
+
+//KDT.h:
+
+#define TYPE int
+
+typedef struct Node {
+	struct Node *right;
+	struct Node *left;
+	TYPE *cord;
+} Node;
+typedef struct KDT {
+	struct Node *root;
+	int k;
+	int cnt;
+} KDT;
+
+//Functions for creating a KDT.
+KDT *createKDT(int k);
+void initKDT(KDT *tree, int k);
+
+//Functions to implement the bag container.
+void KDTAdd(KDT *tree, TYPE *cord);
+int KDTContains(KDT *tree, TYPE *cord);
+void KDTRemove(KDT *tree, TYPE *cord);
+int KDTSize(KDT *tree);
+
+//Functions for destroying a KDT.
+void clearKDT(KDT *tree);
+void destroyKDT(KDT *tree);
+
+/* --------------------------------------------------------------------------------------------------------------- */
+
+/*Time Complexity:
+	Assumptions - The tree is NOT auto balancing in this implementation which means in can be NOT balanced.
+				- A non balanced tree is a sorted linked list.
+
+|---------------|-----------|---------------------------------------------------------------|-----------------------|
+| function name	| Big O time|	Explanation													| Amorticized Analysis	|
+|---------------|-----------|---------------------------------------------------------------|-----------------------|
+|	createKDT	|	O(1)	|	Just create the KDT. Some assertions and call to init.		|	O(1)				|
+|	initKDT		| 	O(1)	|	Assign cnt, root to 0 and k to k.							|	O(1)				|
+|---------------|-----------|---------------------------------------------------------------|-----------------------|
+|	KDTAdd		| 	O(n)	|	If it's a sorted linked list it takes n to get to the end.	|	O(log(n))+			|
+|	KDTContains	| 	O(n)	|	If it's a sorted linked list it takes n to get to the end.	|	O(log(n))+			|
+|	KDTRemove	| 	O(n)	|	If it's a sorted linked list it takes n to get to the end.	|	O(log(n))+			|
+|	KDTSize		| 	O(1)	|	It is just retrieving a struct value.						|	O(1)				|
+|---------------|-----------|---------------------------------------------------------------|-----------------------|
+|	clearKDT	| 	O(n)	|	It has to go through ALL the nodes and remove them. 		|	O(n)				|
+|	destroyKDT	| 	O(n)	|	It calls clearKDT which has a O(n).							|	O(n)				|
+|---------------|-----------|---------------------------------------------------------------|-----------------------|
+
+One might wonder why not have k*n or O(n^2)? Does one not compare d dimensions during an add?
+The answer is that the d is compared on a layer basis. Meaning it is not compared all at once, but rather one
+dimension per layer of the tree. It gives it the same algorithmic complexity of a BST. It is longer because there is
+more information.
+
+I have displayed the algrithmic run time as well as the amorticized analysis or average time complexity to show that
+a balanced tree will have a O(log(n)) rather than klog(n).
+https://www.cs.virginia.edu/~jh2jf/pdfs/matches_poster_1.pdf shows a formal calculation of the algorithmic complexity
+as well as shows some really cool applications.*/
+
+/* --------------------------------------------------------------------------------------------------------------- */
+
+//KDT.c:
+#include <stdio.h>
+#include <stdlib.h>
+#include <assert.h>
+#include "KDT.h"
+
+//Functions for creating a KDT.
+KDT *createKDT(int k) {
+	KDT *tree = (KDT *)malloc(sizeof(KDT));
+	assert(tree != 0 && k > 0);
+	initKDT(tree, k);
+	return tree;
+}
+
+void initKDT(KDT *tree, int k) {
+	tree->cnt = 0;
+	tree->k = k;
+	tree->root = 0;
+}
+
+void _freeKDT(Node *node) {
+	if (node != 0) {
+		_freeKDT(node->left);
+		_freeKDT(node->right);
+		free(node);
+	}
+}
+
+//Functions for destroying a KDT.
+void clearKDT(KDT *tree) {
+	if (tree->root != 0) {
+		_freeKDT(tree->root);
+		tree->root = 0;
+	}
+	tree->cnt = 0;
+}
+
+void destroyKDT(KDT *tree) {
+	if (tree->root != 0) {
+		clearKDT(tree);
+	}
+	free(tree);
+}
+
+int KDTIsEmpty(KDT *tree) {
+	return KDTSize(tree) == 0;
+}
+
+//Functions to implement the bag container.
+Node *_addNode(Node *cur, TYPE *cord, int layer, int k) {
+	assert(cord != 0);
+	layer = (layer >= k - 1) ? 0 : layer;
+	Node *newNode = (Node *)malloc(sizeof(Node));
+	assert(newNode != 0);
+	newNode->left = newNode->right = 0;
+	newNode->cord = cord;
+	if (cur == 0) {
+		return newNode;
+	}
+	if (cord[layer] <= cur->cord[layer]) {
+		cur->left = _addNode(cur->left, cord, layer++, k);
+	} else {
+		cur->right = _addNode(cur->right, cord, layer++, k);
+	}
+
+	return cur;
+}
+
+void KDTAdd(KDT *tree, TYPE *cord) {
+	static int layer = 0;
+	tree->root = _addNode(tree->root, cord, layer, tree->k);
+	tree->cnt++;
+}
+
+int KDTContains(KDT *tree, TYPE *cord) {
+	assert(tree != 0);
+	int searching = 1;
+	if (tree->cnt != 0) {
+		Node *tmp = tree->root;
+		int layer = 0;
+		while (searching && tmp != 0) {
+			layer = (layer >= tree->k - 1) ? 0 : layer;
+			if (tmp->cord[layer] == cord[layer]) {
+				searching = 0;
+			} else if (tmp->cord[layer] < cord[layer]) {
+				tmp = tmp->right;
+			} else if (tmp->cord[layer] >= cord[layer]) {
+				tmp = tmp->left;
+			}
+			layer++;
+		}
+	}
+	return !searching;
+}
+
+TYPE *_leftMost(Node *cur) {
+	assert(cur != 0);
+	Node *lnk = cur;
+	while (lnk->left != 0) {
+		lnk = lnk->left;
+	}
+	return lnk->cord;
+}
+
+Node *_removeLeftMost(Node *cur) {
+	assert(cur != 0);
+	if (cur->left != 0 && cur->left->left != 0) {
+		cur->left = _removeLeftMost(cur->left);
+	} else if (cur->left != 0 && cur->left->left == 0) {
+		Node *tmp = cur->left;
+		cur->left = tmp->right;
+		free(tmp);
+	} else if (cur->left == 0) {
+		Node *tmp = cur;
+		cur = tmp->right;
+		free(tmp);
+	}
+	return cur;
+}
+
+Node *_removeNode(Node *cur, TYPE *cord, int layer, int k) {
+	assert(cur != 0 && cord != 0);
+	if (cord[layer] == cur->cord[layer]) {
+		Node *tmp = cur;
+		if (cur->right == 0) {
+			cur = tmp->left;
+			free(tmp);
+			return cur;
+		} else {
+			cur = _removeLeftMost(cur->right);
+		}
+	} else if (cord[layer] < cur->cord[layer]) {
+		cur->left = _removeNode(cur->left, cord, layer++, k);
+	} else {
+		cur->right = _removeNode(cur->right, cord, layer++, k);
+	}
+	return cur;
+}
+
+void KDTRemove(KDT *tree, TYPE *cord) {
+	if (KDTContains(tree, cord)) {
+		static int layer = 0;
+		tree->root = _removeNode(tree->root, cord, layer, tree->k);
+		tree->cnt--;
+	} else {
+		printf("That cordinate is not present in the kth dimensional space.\n");
+	}
+}
+
+int KDTSize(KDT *tree) {
+	return tree->cnt;
+}
